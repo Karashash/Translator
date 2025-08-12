@@ -26,7 +26,7 @@ with st.expander("Параметры"):
 uploaded = st.file_uploader("Загрузить .docx", type=["docx"])
 
 if not is_google_ready():
-    st.info("Нужна GOOGLE_APPLICATION_CREDENTIALS")
+    st.info("Нужен GOOGLE_APPLICATION_CREDENTIALS")
 
 
 if uploaded and st.button("Перевести"):
