@@ -1,0 +1,8 @@
+streamlit==1.37.1
+python-docx==1.1.2
+google-cloud-translate==3.15.5
+beautifulsoup4==4.12.3
+lxml==5.2.2
+tqdm==4.66.4
+regex==2024.5.15
+rapidfuzz==3.9.6
