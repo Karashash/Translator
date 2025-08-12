@@ -15,30 +15,42 @@ def is_google_ready() -> bool:
     return bool(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") or os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT"))
 
 def _load_credentials_and_project():
-    """Возвращает (creds, project_id). creds может быть None, если используем ADC по файлу."""
-    project_id = None
+    import json
+    from google.oauth2 import service_account
     creds = None
+    project_id = None
 
     if st:
-        if "gcp_service_account" in st.secrets:
-            info = dict(st.secrets["gcp_service_account"])
-            project_id = info.get("project_id")
-            creds = service_account.Credentials.from_service_account_info(info)
-        elif "gcp_service_account_json" in st.secrets:
+        if "gcp_service_account_json" in st.secrets:
             info = json.loads(st.secrets["gcp_service_account_json"])
+            if "private_key" in info and "\\n" in info["private_key"]:
+                info["private_key"] = info["private_key"].replace("\\n", "\n")
             project_id = info.get("project_id")
             creds = service_account.Credentials.from_service_account_info(info)
+
+        elif "gcp_service_account" in st.secrets:
+            info = dict(st.secrets["gcp_service_account"])
+            if "private_key" in info and "\\n" in info["private_key"]:
+                info["private_key"] = info["private_key"].replace("\\n", "\n")
+            project_id = info.get("project_id") or st.secrets.get("gcp_project")
+            creds = service_account.Credentials.from_service_account_info(info)
+
         if not project_id:
-            project_id = st.secrets.get("gcp_project") or st.secrets.get("GOOGLE_CLOUD_PROJECT") or st.secrets.get("GCP_PROJECT")
+            project_id = (
+                st.secrets.get("gcp_project")
+                or st.secrets.get("GOOGLE_CLOUD_PROJECT")
+                or st.secrets.get("GCP_PROJECT")
+            )
 
     if not creds:
         project_id = project_id or os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT")
         creds = None
 
     if not project_id:
-        raise RuntimeError("Не задан project_id. Укажи его в secrets (gcp_project) или переменной окружения GOOGLE_CLOUD_PROJECT/GCP_PROJECT.")
+        raise RuntimeError("Не задан project_id. Укажи gcp_project в secrets или переменную окружения.")
 
     return creds, project_id
+
 
 class GoogleV3Translator:
     def __init__(self, project_id: str = None, location: str = "global"):
