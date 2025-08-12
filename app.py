@@ -27,8 +27,7 @@ uploaded = st.file_uploader("Загрузить .docx", type=["docx"])
 
 if not is_google_ready():
     st.info("Нужна GOOGLE_APPLICATION_CREDENTIALS")
-if not (os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT")):
-    st.info("Укажи проект")
+
 
 if uploaded and st.button("Перевести"):
     data = uploaded.read()
